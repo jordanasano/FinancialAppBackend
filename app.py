@@ -1,10 +1,11 @@
-from flask import Flask
+from flask import Flask, request
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import requests
 import json
 from datetime import date
+import MortgageCalculator
 
 app = Flask(__name__)
 
@@ -18,7 +19,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 def getMonthlyTakeHomeForCA(annualIncome):
 	taxApi = "https://paycheck-calculator.adp.com/api/pcc/v2/calculations"
 
-	#region Private
+	#region 
 	data = {
 	"calculationTypeCode": {
 		"code": "GROSS_TO_NET"
@@ -222,4 +223,18 @@ def getMonthlyTakeHomeForCA(annualIncome):
 	except Exception as error:
 		return f"Error hit. {error}"
 
+@app.post('/calculateMaxLoan')
+def calculateMaxLoan():
+	data = json.loads(request.data)
+	mortgageCalculator = MortgageCalculator.MortgageCalculator()
+	maxLoan = mortgageCalculator.calculateMaxLoan(data)
 
+	return { "maxLoan": maxLoan }
+
+@app.post("/calculateMonthlyPayment")
+def calculateMonthlyPayment():
+	data = json.loads(request.data)
+	mortgageCalculator = MortgageCalculator.MortgageCalculator()
+	monthlyPayment = mortgageCalculator.calculateMonthlyPayment(data)
+
+	return { "monthlyPayment": monthlyPayment }
