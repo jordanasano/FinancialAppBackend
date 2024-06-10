@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
@@ -221,20 +221,34 @@ def getMonthlyTakeHomeForCA(annualIncome):
 		monthlyTakeHomePay = json.loads(response.text)["net"]["amount"]
 		return { "monthlyTakeHomePay": monthlyTakeHomePay }
 	except Exception as error:
-		return f"Error hit. {error}"
+		return abort(400, description = str(error))
 
 @app.post('/calculateMaxLoan')
 def calculateMaxLoan():
-	data = json.loads(request.data)
-	mortgageCalculator = MortgageCalculator.MortgageCalculator()
-	maxLoan = mortgageCalculator.calculateMaxLoan(data)
+	try:
+		data = json.loads(request.data)
+		mortgageCalculator = MortgageCalculator.MortgageCalculator()
+		maxLoan = mortgageCalculator.calculateMaxLoan(data)
 
-	return { "maxLoan": maxLoan }
+		return { "maxLoan": maxLoan }
+	except Exception as error:
+		return abort(400, description = str(error))
 
 @app.post("/calculateMonthlyPayment")
 def calculateMonthlyPayment():
-	data = json.loads(request.data)
-	mortgageCalculator = MortgageCalculator.MortgageCalculator()
-	monthlyPayment = mortgageCalculator.calculateMonthlyPayment(data)
+	try:
+		data = json.loads(request.data)
+		mortgageCalculator = MortgageCalculator.MortgageCalculator()
+		monthlyPayment = mortgageCalculator.calculateMonthlyPayment(data)
 
-	return { "monthlyPayment": monthlyPayment }
+		return { "monthlyPayment": monthlyPayment }
+	except Exception as error:
+		return abort(400, description = str(error))
+		
+@app.get("/affordableCities/<int:maxHomeLoan>/<int:downPayment>/<string:profession>/<string:desiredCity>/<int:allowableMilesFromCity>")
+def findAffordableCities(maxHomeLoan, downPayment, profession, desiredCity, allowableMilesFromCity):
+	try:
+		response = model.generate_content(f"As a {profession} with a budget of ${downPayment + maxHomeLoan}, I'm seeking recommendations for the top 5 cities within {allowableMilesFromCity} miles of {desiredCity}, California. Please include {desiredCity} in the suggestions. Can you provide details on average home prices, property sizes, and home sizes for 2 bedroom, 1 bath single-family homes in these areas?")
+		return response.text
+	except Exception as error:
+		return abort(429, description = "Gemini's request limit has been reached. Try again later.'")

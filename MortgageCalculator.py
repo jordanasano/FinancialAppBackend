@@ -1,9 +1,9 @@
 class MortgageCalculator:
 	def calculateMaxLoan(self, data):
-		required_keys = { "mortgageRate", "grossMonthlyIncome", "loanLength", "monthlyDebt", "maxDti"}
+		requiredKeys = { "mortgageRate", "grossMonthlyIncome", "loanLength", "monthlyDebt", "maxDti"}
 
-		if not required_keys.issubset(data.keys()):
-			raise ValueError("Missing required keys in the data dictionary")
+		if not requiredKeys.issubset(data.keys()):
+			raise ValueError("Missing required keys in the data dictionary. Required keys are: " + ", ".join(requiredKeys))
 
 		mortgageRate = data["mortgageRate"]
 		grossMonthlyIncome = data["grossMonthlyIncome"]
@@ -21,10 +21,10 @@ class MortgageCalculator:
 		return maxLoanAmount
 
 	def calculateMonthlyPayment(self, data):
-		required_keys = {'mortgageRate', 'loanAmount', 'loanLength'}
+		requiredKeys = {'mortgageRate', 'loanAmount', 'loanLength'}
 
-		if not required_keys.issubset(data.keys()):
-			raise ValueError("Missing required keys in the data dictionary")
+		if not requiredKeys.issubset(data.keys()):
+			raise ValueError("Missing required keys in the data dictionary. Required keys are: " + ", ".join(requiredKeys))
 
 		mortgageRate = data["mortgageRate"]
 		loanAmount = data["loanAmount"]
