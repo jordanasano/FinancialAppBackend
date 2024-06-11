@@ -6,8 +6,10 @@ import requests
 import json
 from datetime import date
 import MortgageCalculator
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/*/*": {"origins": "http://localhost:3000"}})
 
 load_dotenv()
 
@@ -15,10 +17,14 @@ load_dotenv()
 genai.configure(api_key=os.environ["API_KEY"])
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-@app.post('/monthlyTakeHomeForCA/<int:annualIncome>')
-def getMonthlyTakeHomeForCA(annualIncome):
+@app.post('/monthlyTakeHomeForCA')
+def getMonthlyTakeHomeForCA():
 	taxApi = "https://paycheck-calculator.adp.com/api/pcc/v2/calculations"
-
+	data = json.loads(request.data)
+	if data.get('annualIncome') is None:
+		return abort(400, description = "Please include annualIncome in request data.")
+	
+	annualIncome = data["annualIncome"]
 	#region 
 	data = {
 	"calculationTypeCode": {
@@ -218,8 +224,12 @@ def getMonthlyTakeHomeForCA(annualIncome):
 
 	try:
 		response = requests.post(taxApi, json = data)
-		monthlyTakeHomePay = json.loads(response.text)["net"]["amount"]
-		return { "monthlyTakeHomePay": monthlyTakeHomePay }
+		netMonthlyTakeHomePay = json.loads(response.text)["net"]["amount"]
+		grossMonthlyTakeHomePay = json.loads(response.text)["gross"]["amount"]
+		return { 
+			"netMonthlyTakeHomePay": netMonthlyTakeHomePay,
+			"grossMonthlyTakeHomePay": grossMonthlyTakeHomePay
+		}
 	except Exception as error:
 		return abort(400, description = str(error))
 

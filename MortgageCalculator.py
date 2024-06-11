@@ -18,7 +18,7 @@ class MortgageCalculator:
 
 		maxLoanAmount = (maxMonthlyPayment * ((1 + monthlyInterestRate) ** loanTermMonths - 1)) / (monthlyInterestRate * (1 + monthlyInterestRate) ** loanTermMonths)
 		
-		return maxLoanAmount
+		return round(maxLoanAmount, 2)
 
 	def calculateMonthlyPayment(self, data):
 		requiredKeys = {'mortgageRate', 'loanAmount', 'loanLength'}
@@ -35,4 +35,4 @@ class MortgageCalculator:
 	
 		monthlyPayment = loanAmount * (monthlyInterestRate * (1 + monthlyInterestRate) ** loanTermMonths) / ((1 + monthlyInterestRate) ** loanTermMonths - 1)
 
-		return monthlyPayment
+		return round(monthlyPayment, 2)
