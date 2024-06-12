@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 import requests
 import json
 from datetime import date
-import MortgageCalculator
+from MortgageCalculator import MortgageCalculator
+from GeminiProcessor import GeminiProcessor
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -18,7 +19,7 @@ genai.configure(api_key=os.environ["API_KEY"])
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.post('/monthlyTakeHomeForCA')
-def getMonthlyTakeHomeForCA():
+def calculateMonthlyTakeHomeForCA():
 	taxApi = "https://paycheck-calculator.adp.com/api/pcc/v2/calculations"
 	data = json.loads(request.data)
 	if data.get('annualIncome') is None:
@@ -237,8 +238,8 @@ def getMonthlyTakeHomeForCA():
 def calculateMaxLoan():
 	try:
 		data = json.loads(request.data)
-		mortgageCalculator = MortgageCalculator.MortgageCalculator()
-		maxLoan = mortgageCalculator.calculateMaxLoan(data)
+		GeminiProcessor.convertStringToHtmlString("hi\nhi")
+		maxLoan = MortgageCalculator.calculateMaxLoan(data)
 
 		return { "maxLoan": maxLoan }
 	except Exception as error:
@@ -248,17 +249,20 @@ def calculateMaxLoan():
 def calculateMonthlyPayment():
 	try:
 		data = json.loads(request.data)
-		mortgageCalculator = MortgageCalculator.MortgageCalculator()
-		monthlyPayment = mortgageCalculator.calculateMonthlyPayment(data)
+		monthlyPayment = MortgageCalculator.calculateMonthlyPayment(data)
 
 		return { "monthlyPayment": monthlyPayment }
 	except Exception as error:
 		return abort(400, description = str(error))
 		
-@app.get("/affordableCities/<int:maxHomeLoan>/<int:downPayment>/<string:profession>/<string:desiredCity>/<int:allowableMilesFromCity>")
+@app.route("/affordableCities/<int:maxHomeLoan>/<int:downPayment>/<string:profession>/<string:desiredCity>/<int:allowableMilesFromCity>", methods=['GET', 'OPTIONS'])
 def findAffordableCities(maxHomeLoan, downPayment, profession, desiredCity, allowableMilesFromCity):
 	try:
-		response = model.generate_content(f"As a {profession} with a budget of ${downPayment + maxHomeLoan}, I'm seeking recommendations for the top 5 cities within {allowableMilesFromCity} miles of {desiredCity}, California. Please include {desiredCity} in the suggestions. Can you provide details on average home prices, property sizes, and home sizes for 2 bedroom, 1 bath single-family homes in these areas?")
-		return response.text
-	except Exception as error:
-		return abort(429, description = "Gemini's request limit has been reached. Try again later.'")
+		response = model.generate_content(f"As a {profession} with a budget of ${downPayment + maxHomeLoan} and prioritizing cost, I'm seeking recommendations for the top 5 cities within {allowableMilesFromCity} miles of {desiredCity}, California. Please include {desiredCity} in the suggestions. Can you provide details on average home prices, property sizes, and home sizes for 2 bedroom, 1 bath single-family homes in these areas?")
+		htmlString = GeminiProcessor.convertStringToHtmlString(response.text)
+		return htmlString
+	except requests.exceptions.HTTPError as http_err:
+		if response.status_code == 429:
+			return abort(429, description = "Too many requests. Please wait and try again later.")
+		else:
+			return abort(400, description = f"HTTP error occurred: {http_err}")
