@@ -1,5 +1,6 @@
 class MortgageCalculator:
-	def calculateMaxLoan(self, data):
+	@staticmethod
+	def calculateMaxLoan(data):
 		requiredKeys = { "mortgageRate", "grossMonthlyIncome", "loanLength", "monthlyDebt", "maxDti"}
 
 		if not requiredKeys.issubset(data.keys()):
@@ -18,9 +19,10 @@ class MortgageCalculator:
 
 		maxLoanAmount = (maxMonthlyPayment * ((1 + monthlyInterestRate) ** loanTermMonths - 1)) / (monthlyInterestRate * (1 + monthlyInterestRate) ** loanTermMonths)
 		
-		return round(maxLoanAmount, 2)
+		return round(maxLoanAmount)
 
-	def calculateMonthlyPayment(self, data):
+	@staticmethod
+	def calculateMonthlyPayment(data):
 		requiredKeys = {'mortgageRate', 'loanAmount', 'loanLength'}
 
 		if not requiredKeys.issubset(data.keys()):
