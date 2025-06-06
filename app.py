@@ -239,7 +239,6 @@ def calculateMonthlyTakeHomeForCA():
 def calculateMaxLoan():
 	try:
 		data = json.loads(request.data)
-		GeminiProcessor.convertStringToHtmlString("hi\nhi")
 		maxLoan = MortgageCalculator.calculateMaxLoan(data)
 
 		return { "maxLoan": maxLoan }
