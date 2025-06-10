@@ -11,7 +11,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 origin = os.getenv("ORIGIN_TO_WHITELIST", "http://localhost:3000")
-CORS(app, resources={r"/*/*": {"origins": origin}})
+CORS(app, origins=origin)
 
 load_dotenv()
 
@@ -266,3 +266,8 @@ def findAffordableCities(maxHomeLoan, downPayment, profession, desiredCity, allo
 			return abort(429, description = "Too many requests. Please wait and try again later.")
 		else:
 			return abort(400, description = f"HTTP error occurred: {http_err}")
+
+# Specifically needed for Fly.io deployment.
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))  # default 8080 locally
+    app.run(host="0.0.0.0", port=port)
