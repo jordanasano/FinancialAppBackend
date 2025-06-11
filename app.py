@@ -9,11 +9,12 @@ from MortgageCalculator import MortgageCalculator
 from GeminiProcessor import GeminiProcessor
 from flask_cors import CORS
 
-app = Flask(__name__)
-origin = os.getenv("ORIGIN_TO_WHITELIST", "http://localhost:3000")
-CORS(app, origins=origin)
-
 load_dotenv()
+app = Flask(__name__)
+origin_env = os.getenv("ORIGIN_TO_WHITELIST", "http://localhost:3000")
+origins = [o.strip() for o in origin_env.split(",")]
+CORS(app, origins=origins)
+
 
 # Initialize Gemini
 genai.configure(api_key=os.environ["API_KEY"])
