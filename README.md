@@ -63,6 +63,7 @@ FinancialAppBackend/
 ├── utils/               # Helper functions
 ├── requirements.txt
 └── .env                 # Environment variables (not committed)
+```
 
 ### API Endpoints
 ```bash
